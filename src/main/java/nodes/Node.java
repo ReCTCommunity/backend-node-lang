@@ -1,23 +1,19 @@
 package nodes;
 
-public class Node {
+public abstract class Node {
     private final int nodeId;
-    private final NodePin[] pins;
 
-    public Node(final int nodeId, final NodePin[] pins) {
-        this.nodeId = nodeId;
-        this.pins = pins;
-    }
+    private static int nextNodeID = 1;
 
-    public NodePin[] getPins() {
-        return pins;
+    public Node() {
+        nodeId = nextNodeID++;
     }
 
     public int getNodeId() {
         return nodeId;
     }
 
-    public String getName() {
-        return "Node " + (char) (64 + nodeId);
-    }
+    public abstract NodePin[] getPins();
+
+    public abstract String getName();
 }
