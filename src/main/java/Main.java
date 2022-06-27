@@ -10,7 +10,7 @@ public class Main extends Application {
 
     @Override
     public void process() {
-        ImGui.text("Hello, World!");
+        ImGui.text("Hello, World, ReCT!");
     }
 
     public static void main(String[] args) {
