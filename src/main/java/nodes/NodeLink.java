@@ -5,10 +5,12 @@ public class NodeLink {
     private final int end;
     private final int id;
 
-    public NodeLink(int start, int end, int id){
+    private static int nextLinkID = 1;
+
+    public NodeLink(int start, int end){
         this.start = start;
         this.end = end;
-        this.id = id;
+        this.id = nextLinkID++;
     }
 
     public int getId() {

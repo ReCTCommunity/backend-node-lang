@@ -12,6 +12,7 @@ import imgui.extension.nodeditor.NodeEditorContext;
 import imgui.extension.nodeditor.flag.NodeEditorPinKind;
 import imgui.flag.ImGuiMouseButton;
 import imgui.type.ImInt;
+import languageNodes.TestNode;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -24,14 +25,11 @@ public class NodeEditorDisplay {
         ImNodes.createContext();
     }
 
-    private int nextNodeId = 1;
-    private int nextPinId = 100;
-
     private final Map<Integer, Node> nodes = new HashMap<>();
     private final ArrayList<NodeLink> nodeLinks = new ArrayList<>();
 
     public Node createGraphNode() {
-        final Node node = new Node(nextNodeId++, new NodePin[]{ new NodePin(nextPinId++, false, "in1"), new NodePin(nextPinId++, false, "in2"), new NodePin(nextPinId++, true, "out") });
+        TestNode node = new TestNode();
         this.nodes.put(node.getNodeId(), node);
         return node;
     }
@@ -82,7 +80,7 @@ public class NodeEditorDisplay {
         ImInt end_attr = new ImInt();
         if (ImNodes.isLinkCreated(start_attr, end_attr))
         {
-            NodeLink link = new NodeLink(start_attr.get(), end_attr.get(), nextNodeId++);
+            NodeLink link = new NodeLink(start_attr.get(), end_attr.get());
             nodeLinks.add(link);
         }
 
