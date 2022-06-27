@@ -16,14 +16,16 @@ public class Main extends Application {
 
     @Override
     protected void configure(Configuration config) {
-        config.setTitle("SomeBackendNodeThing Editor");
+        config.setTitle("ReCTNode Editor");
     }
 
     @Override
     public void process() {
         ImGui.setNextWindowPos(0, 0);
         ImGui.setNextWindowSize(ImGui.getIO().getDisplaySizeX(), ImGui.getIO().getDisplaySizeY());
+
         if(ImGui.begin("editor", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollWithMouse)){
+
             nodeEditor.drawEditor();
 
             ImGui.end();

@@ -3,13 +3,12 @@ package languageNodes;
 import nodes.Node;
 import nodes.NodePin;
 
-public class TestNode extends Node {
+public class BeginNode extends Node {
     private final NodePin[] pins;
-    public TestNode(){
+    public BeginNode(){
         super();
-        pins = new NodePin[2];
-        pins[0] = new NodePin("hello", false);
-        pins[1] = new NodePin("hi!", true);
+        pins = new NodePin[1];
+        pins[0] = new NodePin("Run", false);
     }
 
     @Override
@@ -19,6 +18,6 @@ public class TestNode extends Node {
 
     @Override
     public String getName() {
-        return "TestNode";
+        return "Main/Begin Node";
     }
 }

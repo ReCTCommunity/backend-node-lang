@@ -12,12 +12,13 @@ import imgui.extension.nodeditor.NodeEditorContext;
 import imgui.extension.nodeditor.flag.NodeEditorPinKind;
 import imgui.flag.ImGuiMouseButton;
 import imgui.type.ImInt;
-import languageNodes.TestNode;
+import languageNodes.*;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.*;
 
 public class NodeEditorDisplay {
     private static final ImNodesContext CONTEXT = new ImNodesContext();
@@ -27,9 +28,15 @@ public class NodeEditorDisplay {
 
     private final Map<Integer, Node> nodes = new HashMap<>();
     private final ArrayList<NodeLink> nodeLinks = new ArrayList<>();
+    private final NodeFactory nodeFactory = new NodeFactory();
+    private final Map<String, Class<?>> existingNodes = new HashMap<String, Class<?>>(){{
+        put("Begin/Main Node", BeginNode.class);
+        put("Set Variable Node", SetVariableNode.class);
+        put("Change Variable Node", ChangeVariableNode.class);
+    }};
 
-    public Node createGraphNode() {
-        TestNode node = new TestNode();
+    public Node createGraphNode(Class<?> type) {
+        Node node = nodeFactory.getNode(type);
         this.nodes.put(node.getNodeId(), node);
         return node;
     }
@@ -131,11 +138,26 @@ public class NodeEditorDisplay {
         }
 
         if (ImGui.beginPopup("node_editor_context")) {
-            if (ImGui.button("Create New Node")) {
+            /*if (ImGui.button("Create New Node")) {
                 final Node node = createGraphNode();
                 ImNodes.setNodeScreenSpacePos(node.getNodeId(), ImGui.getMousePosX(), ImGui.getMousePosY());
                 ImGui.closeCurrentPopup();
+            }*/
+
+            ImInt selectedItem = new ImInt();
+
+            Set<String> keys = existingNodes.keySet();
+            String[] keysArray = keys.toArray(new String[keys.size()]);
+
+            ImGui.text("New Node");
+
+            if(ImGui.combo(" ", selectedItem, keysArray))
+            {
+                final Node node = createGraphNode(existingNodes.get(keysArray[selectedItem.get()]));
+                ImNodes.setNodeScreenSpacePos(node.getNodeId(), ImGui.getMousePosX(), ImGui.getMousePosY());
+                ImGui.closeCurrentPopup();
             }
+
             ImGui.endPopup();
         }
     }
