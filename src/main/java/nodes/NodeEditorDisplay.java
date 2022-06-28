@@ -1,11 +1,15 @@
 package nodes;
 
+import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImVec2;
+import imgui.app.Color;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
+import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
+import imgui.extension.imnodes.flag.ImNodesStyleVar;
 import imgui.extension.nodeditor.NodeEditor;
 import imgui.extension.nodeditor.NodeEditorConfig;
 import imgui.extension.nodeditor.NodeEditorContext;
@@ -30,9 +34,10 @@ public class NodeEditorDisplay {
     private final ArrayList<NodeLink> nodeLinks = new ArrayList<>();
     private final NodeFactory nodeFactory = new NodeFactory();
     private final Map<String, Class<?>> existingNodes = new HashMap<String, Class<?>>(){{
-        put("Begin/Main Node", BeginNode.class);
-        put("Set Variable Node", SetVariableNode.class);
-        put("Change Variable Node", ChangeVariableNode.class);
+        put("Begin Event", BeginEventNode.class);
+        put("Request Event", RequestEventNode.class);
+        put("Set Variable", SetVariableNode.class);
+        put("Change Variable", ChangeVariableNode.class);
     }};
 
     public Node createGraphNode(Class<?> type) {
@@ -45,10 +50,52 @@ public class NodeEditorDisplay {
         ImNodes.editorContextSet(CONTEXT);
         ImNodes.beginNodeEditor();
         for (Node node : nodes.values()) {
+            // get the NodeType of the current node, this type stores color info, base connections, etc...
+            NodeType thisNode = node.getType();
+
+            // load node colors
+            int colorChanges = 3;
+            ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, thisNode.HeadColor);
+            ImNodes.pushColorStyle(ImNodesColorStyle.TitleBarSelected, thisNode.SelectedColor);
+            ImNodes.pushColorStyle(ImNodesColorStyle.TitleBarHovered, thisNode.SelectedColor);
+
+            // start building this node
             ImNodes.beginNode(node.getNodeId());
 
+            // start building the node title bar
             ImNodes.beginNodeTitleBar();
+
+            // set the title textf
             ImGui.text(node.getName());
+
+            // generate the node's execution pins (the cool triangle ones)
+            // -----------------------------------------------------------
+
+            // set the pin color to white
+            ImNodes.pushColorStyle(ImNodesColorStyle.Pin, ImColor.floatToColor(1,1,1));
+
+            // generate the pins themselves
+            NodePin[] executionPins = node.getExecutionPins();
+            for (int i = 0; i < executionPins.length; i++)
+            {
+                NodePin p = executionPins[i];
+
+                if (p.isOutput()) {
+                    ImNodes.beginOutputAttribute(p.getId(), ImNodesPinShape.Triangle);
+                    ImNodes.endInputAttribute();
+                } else {
+                    ImNodes.beginInputAttribute(p.getId(), ImNodesPinShape.Triangle);
+                    ImNodes.endInputAttribute();
+                }
+
+                if (i < executionPins.length - 1)
+                    ImGui.sameLine();
+            }
+
+            // reset the pin color
+            ImNodes.popColorStyle();
+
+
             ImNodes.endNodeTitleBar();
 
             ImGui.newLine();
@@ -71,10 +118,17 @@ public class NodeEditorDisplay {
 
             ImNodes.endNode();
 
+            // unload this node's color changes
+            for (int i = 0; i < colorChanges; i++) {
+                ImNodes.popColorStyle();
+            }
+
         }
 
         for(NodeLink l : nodeLinks){
+            if (l.isExecution()) ImNodes.pushColorStyle(ImNodesColorStyle.Link, ImColor.floatToColor(1,1,1));
             ImNodes.link(l.getId(), l.getStart(), l.getEnd());
+            if (l.isExecution()) ImNodes.popColorStyle();
         }
 
         final boolean isEditorHovered = ImNodes.isEditorHovered();
@@ -87,7 +141,7 @@ public class NodeEditorDisplay {
         ImInt end_attr = new ImInt();
         if (ImNodes.isLinkCreated(start_attr, end_attr))
         {
-            NodeLink link = new NodeLink(start_attr.get(), end_attr.get());
+            NodeLink link = new NodeLink(start_attr.get(), end_attr.get(), NodePin.AllPins.get(start_attr.get()).isExecution());
             nodeLinks.add(link);
         }
 

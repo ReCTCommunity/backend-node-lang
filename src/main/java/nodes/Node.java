@@ -15,5 +15,9 @@ public abstract class Node {
 
     public abstract NodePin[] getPins();
 
+    public abstract NodePin[] getExecutionPins();
+
     public abstract String getName();
+
+    public abstract NodeType getType();
 }

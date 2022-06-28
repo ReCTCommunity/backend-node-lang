@@ -2,15 +2,17 @@ package languageNodes;
 
 import nodes.Node;
 import nodes.NodePin;
+import nodes.NodeType;
+import nodes.OperationNode;
 
-public class ChangeVariableNode extends Node {
+public class ChangeVariableNode extends OperationNode {
     private final NodePin[] pins;
     public ChangeVariableNode(){
         super();
-        pins = new NodePin[3];
-        pins[0] = new NodePin("Variable", true);
-        pins[1] = new NodePin("By(value)", true);
-        pins[2] = new NodePin("", true);
+        pins = new NodePin[2];
+        pins[0] = new NodePin("Variable", false, false);
+        pins[1] = new NodePin("By(value)", false, false);
+        //pins[2] = new NodePin("", true, false);
     }
 
     @Override
@@ -20,6 +22,6 @@ public class ChangeVariableNode extends Node {
 
     @Override
     public String getName() {
-        return "Change Variable Node";
+        return "Change Variable Operation";
     }
 }
