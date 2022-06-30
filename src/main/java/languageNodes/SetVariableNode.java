@@ -1,18 +1,15 @@
 package languageNodes;
 
-import nodes.Node;
-import nodes.NodePin;
-import nodes.NodeType;
-import nodes.OperationNode;
+import nodes.*;
 
 public class SetVariableNode extends OperationNode {
     private final NodePin[] pins;
     public SetVariableNode(){
         super();
         pins = new NodePin[3];
-        pins[0] = new NodePin("Variable", true, false);
-        pins[1] = new NodePin("Value", true, false);
-        pins[2] = new NodePin("", true, false);
+        pins[0] = new NodePin("Variable", false, Datatype.Variable);
+        pins[1] = new NodePin("Value", false, Datatype.Any);
+        pins[2] = new NodePin("Pass Through", true, Datatype.Any);
     }
 
     @Override

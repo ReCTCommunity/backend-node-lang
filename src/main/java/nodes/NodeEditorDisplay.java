@@ -14,9 +14,14 @@ import imgui.extension.nodeditor.NodeEditor;
 import imgui.extension.nodeditor.NodeEditorConfig;
 import imgui.extension.nodeditor.NodeEditorContext;
 import imgui.extension.nodeditor.flag.NodeEditorPinKind;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiMouseButton;
 import imgui.type.ImInt;
 import languageNodes.*;
+import languageNodes.mathNodes.AddIntNode;
+import languageNodes.mathNodes.DivIntNode;
+import languageNodes.mathNodes.MulIntNode;
+import languageNodes.mathNodes.SubIntNode;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -38,6 +43,11 @@ public class NodeEditorDisplay {
         put("Request Event", RequestEventNode.class);
         put("Set Variable", SetVariableNode.class);
         put("Change Variable", ChangeVariableNode.class);
+
+        put("Add Int", AddIntNode.class);
+        put("Subtract Int", SubIntNode.class);
+        put("Multiply Int", MulIntNode.class);
+        put("Divide Int", DivIntNode.class);
     }};
 
     public Node createGraphNode(Class<?> type) {
@@ -59,14 +69,20 @@ public class NodeEditorDisplay {
             ImNodes.pushColorStyle(ImNodesColorStyle.TitleBarSelected, thisNode.SelectedColor);
             ImNodes.pushColorStyle(ImNodesColorStyle.TitleBarHovered, thisNode.SelectedColor);
 
+
             // start building this node
             ImNodes.beginNode(node.getNodeId());
 
             // start building the node title bar
             ImNodes.beginNodeTitleBar();
 
-            // set the title textf
+            // set the title text
             ImGui.text(node.getName());
+
+
+//            ImGui.pushStyleColor(ImGuiCol.Button, ImColor.floatToColor(0,0,0,0.4f));
+//            ImGui.button(node.getType().toString());
+//            ImGui.popStyleColor();
 
             // generate the node's execution pins (the cool triangle ones)
             // -----------------------------------------------------------
@@ -101,19 +117,35 @@ public class NodeEditorDisplay {
             ImGui.newLine();
 
             for (NodePin pin : node.getPins()) {
+                // set pin color
+                if (pin.isExecution())
+                    ImNodes.pushColorStyle(ImNodesColorStyle.Pin , ImColor.floatToColor(1,1,1));
+                else
+                    ImNodes.pushColorStyle(ImNodesColorStyle.Pin, pin.getDatatype().PinColor);
+
                 if (pin.isOutput()) {
-                    ImNodes.beginOutputAttribute(pin.getId());
+                    // set pin shape
+                    if (pin.isExecution())
+                        ImNodes.beginOutputAttribute(pin.getId(), ImNodesPinShape.Triangle);
+                    else
+                        ImNodes.beginOutputAttribute(pin.getId(), ImNodesPinShape.CircleFilled);
+
                     ImVec2 size = new ImVec2();
                     ImGui.calcTextSize(size, pin.getName());
                     ImGui.indent(128);
                     ImGui.textUnformatted(pin.getName());
                     ImNodes.endOutputAttribute();
                 } else {
-                    ImNodes.beginInputAttribute(pin.getId(), ImNodesPinShape.CircleFilled);
+                    // set pin shape
+                    if (pin.isExecution())
+                        ImNodes.beginInputAttribute(pin.getId(), ImNodesPinShape.Triangle);
+                    else
+                        ImNodes.beginInputAttribute(pin.getId(), ImNodesPinShape.CircleFilled);
+
                     ImGui.textUnformatted(pin.getName());
                     ImNodes.endInputAttribute();
                 }
-
+                ImNodes.popColorStyle();
             }
 
             ImNodes.endNode();
@@ -126,9 +158,13 @@ public class NodeEditorDisplay {
         }
 
         for(NodeLink l : nodeLinks){
-            if (l.isExecution()) ImNodes.pushColorStyle(ImNodesColorStyle.Link, ImColor.floatToColor(1,1,1));
+            if (l.isExecution())
+                ImNodes.pushColorStyle(ImNodesColorStyle.Link, ImColor.floatToColor(1,1,1));
+            else {
+                ImNodes.pushColorStyle(ImNodesColorStyle.Link, l.getDatatype().PinColor);
+            }
             ImNodes.link(l.getId(), l.getStart(), l.getEnd());
-            if (l.isExecution()) ImNodes.popColorStyle();
+            ImNodes.popColorStyle();
         }
 
         final boolean isEditorHovered = ImNodes.isEditorHovered();
@@ -141,8 +177,25 @@ public class NodeEditorDisplay {
         ImInt end_attr = new ImInt();
         if (ImNodes.isLinkCreated(start_attr, end_attr))
         {
-            NodeLink link = new NodeLink(start_attr.get(), end_attr.get(), NodePin.AllPins.get(start_attr.get()).isExecution());
-            nodeLinks.add(link);
+            NodePin startPin = NodePin.AllPins.get(start_attr.get());
+            NodePin endPin = NodePin.AllPins.get(end_attr.get());
+
+            // mmmmm cant if-guard in an if statment aaaaaaaaaaaaa, welp time to stack ifs
+            // -Red
+
+            if ((startPin.isExecution() && endPin.isExecution()) ||
+                (startPin.getDatatype() == endPin.getDatatype()) ||
+                (!startPin.isExecution() && endPin.getDatatype() == Datatype.Any))
+            {
+                NodeLink link;// = new NodeLink(start_attr.get(), end_attr.get(), );
+
+                if (startPin.isExecution())
+                    link = new NodeLink(start_attr.get(), end_attr.get(), true);
+                else
+                    link = new NodeLink(start_attr.get(), end_attr.get(), startPin.getDatatype());
+
+                nodeLinks.add(link);
+            }
         }
 
         ImInt link_id = new ImInt();
