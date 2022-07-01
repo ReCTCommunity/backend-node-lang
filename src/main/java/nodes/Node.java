@@ -20,4 +20,7 @@ public abstract class Node {
     public abstract String getName();
 
     public abstract NodeType getType();
+
+    public void OnInputHookup(NodeLink link) {}
+    public void OnOutputHookup(NodeLink link) {}
 }

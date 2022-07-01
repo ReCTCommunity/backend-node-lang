@@ -4,10 +4,10 @@ import imgui.ImColor;
 
 public enum NodeType {
     Event("#ff6054", "#ff8d85"),
-    Control("#0cedaa", "#8debcf"),
+    Control("#383838", "#383838"),
     Math("#d11f4c", "#cf5170"),
     Operation("#ffaa4f", "#ffc180"),
-    Value("#75ff69", "#a1ff99");
+    Value("#62b85a", "#70cc68");
 
 
     public final int HeadColor;

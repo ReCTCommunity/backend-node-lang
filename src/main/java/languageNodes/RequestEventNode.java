@@ -8,8 +8,8 @@ public class RequestEventNode extends EventNode {
     private final NodePin[] pins = new NodePin[2];
     public RequestEventNode() {
         super();
-        pins[0] = new NodePin("Parameters", true, Datatype.Dictionary);
-        pins[1] = new NodePin("Test", true, true);
+        pins[0] = new NodePin(this, "Parameters", true, Datatype.Dictionary);
+        pins[1] = new NodePin(this, "Test", true, true);
     }
     @Override
     public NodePin[] getPins() {

@@ -4,15 +4,14 @@ import nodes.Datatype;
 import nodes.MathNode;
 import nodes.NodePin;
 
-public class MulIntNode extends MathNode {
+public class EqualsNode extends MathNode {
     private final NodePin[] pins = new NodePin[3];
-    public MulIntNode()
+    public EqualsNode()
     {
-        pins[0] = new NodePin(this, "A", false, Datatype.Int);
-        pins[1] = new NodePin(this, "B", false, Datatype.Int);
-        pins[2] = new NodePin(this, "Result", true, Datatype.Int);
+        pins[0] = new NodePin(this, "A", false, Datatype.Any);
+        pins[1] = new NodePin(this, "B", false, Datatype.Any);
+        pins[2] = new NodePin(this, "Result", true, Datatype.Bool);
     }
-
     @Override
     public NodePin[] getPins() {
         return pins;
@@ -20,6 +19,6 @@ public class MulIntNode extends MathNode {
 
     @Override
     public String getName() {
-        return "Multiply Int";
+        return "Equals";
     }
 }

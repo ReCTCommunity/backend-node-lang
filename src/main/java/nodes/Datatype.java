@@ -16,7 +16,12 @@ public enum Datatype {
     FloatCollection("#286da8", true),
 
     Any("#b342f5", false),
+    AnyCollection("#b342f5", true),
+
     Dictionary("#cafa87", false);
+
+    //Type("#0fb800", false),
+    //TypeCollection("#0fb800", true);
 
     public final int PinColor;
     public final boolean IsCollection;

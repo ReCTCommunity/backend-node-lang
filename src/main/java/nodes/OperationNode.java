@@ -5,8 +5,8 @@ public abstract class OperationNode extends Node{
 
     public OperationNode()
     {
-        executionPins[0] = new NodePin("in", false, true);
-        executionPins[1] = new NodePin("out", true, true);
+        executionPins[0] = new NodePin(this, "in", false, true);
+        executionPins[1] = new NodePin(this, "out", true, true);
     }
     @Override
     public NodePin[] getExecutionPins() {

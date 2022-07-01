@@ -7,9 +7,9 @@ public class SetVariableNode extends OperationNode {
     public SetVariableNode(){
         super();
         pins = new NodePin[3];
-        pins[0] = new NodePin("Variable", false, Datatype.Variable);
-        pins[1] = new NodePin("Value", false, Datatype.Any);
-        pins[2] = new NodePin("Pass Through", true, Datatype.Any);
+        pins[0] = new NodePin(this, "Variable", false, Datatype.Variable);
+        pins[1] = new NodePin(this, "Value", false, Datatype.Any);
+        pins[2] = new NodePin(this, "Pass Through", true, Datatype.Any);
     }
 
     @Override

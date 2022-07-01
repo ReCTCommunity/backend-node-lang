@@ -8,9 +8,9 @@ public class DivIntNode extends MathNode {
     private final NodePin[] pins = new NodePin[3];
     public DivIntNode()
     {
-        pins[0] = new NodePin("A", false, Datatype.Int);
-        pins[1] = new NodePin("B", false, Datatype.Int);
-        pins[2] = new NodePin("Result", true, Datatype.Int);
+        pins[0] = new NodePin(this, "A", false, Datatype.Int);
+        pins[1] = new NodePin(this, "B", false, Datatype.Int);
+        pins[2] = new NodePin(this, "Result", true, Datatype.Int);
     }
 
     @Override

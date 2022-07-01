@@ -18,10 +18,8 @@ import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiMouseButton;
 import imgui.type.ImInt;
 import languageNodes.*;
-import languageNodes.mathNodes.AddIntNode;
-import languageNodes.mathNodes.DivIntNode;
-import languageNodes.mathNodes.MulIntNode;
-import languageNodes.mathNodes.SubIntNode;
+import languageNodes.controlNodes.IfNode;
+import languageNodes.mathNodes.*;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -48,6 +46,23 @@ public class NodeEditorDisplay {
         put("Subtract Int", SubIntNode.class);
         put("Multiply Int", MulIntNode.class);
         put("Divide Int", DivIntNode.class);
+
+        put("Cast Any to Type", CastAnyToTypeNode.class);
+        put("Type Literal", TypeLiteralNode.class);
+
+        put("Get Collection Length", GetCollectionLenghNode.class);
+        put("Get Collection Item", GetCollectionItemNode.class);
+        put("Get Dictionary Item", GetDictionaryItemNode.class);
+        put("Get Dictionary Keys", GetDictionaryKeysNode.class);
+        put("Get Dictionary Values", GetDictionaryValuesNode.class);
+
+        put("Equals", EqualsNode.class);
+
+        put("Logical And", LogicalAndNode.class);
+        put("Logical Or", LogicalOrNode.class);
+        put("Logical Not", LogicalNotNode.class);
+
+        put("If", IfNode.class);
     }};
 
     public Node createGraphNode(Class<?> type) {
@@ -78,11 +93,6 @@ public class NodeEditorDisplay {
 
             // set the title text
             ImGui.text(node.getName());
-
-
-//            ImGui.pushStyleColor(ImGuiCol.Button, ImColor.floatToColor(0,0,0,0.4f));
-//            ImGui.button(node.getType().toString());
-//            ImGui.popStyleColor();
 
             // generate the node's execution pins (the cool triangle ones)
             // -----------------------------------------------------------
@@ -115,6 +125,20 @@ public class NodeEditorDisplay {
             ImNodes.endNodeTitleBar();
 
             ImGui.newLine();
+
+            // for value nodes: draw dropdown (or text box but that's not implemented yet)
+            if (node instanceof ValueNode) {
+                ValueNode v = (ValueNode)node;
+
+                ImGui.pushItemWidth(150);
+
+                ImInt selection = new ImInt(v.getCurrentValue());
+                if(ImGui.combo("", selection, v.getDropdownValues())) {
+                    v.OnValueChanged(selection.get());
+                }
+
+                ImGui.popItemWidth();
+            }
 
             for (NodePin pin : node.getPins()) {
                 // set pin color
@@ -195,6 +219,8 @@ public class NodeEditorDisplay {
                     link = new NodeLink(start_attr.get(), end_attr.get(), startPin.getDatatype());
 
                 nodeLinks.add(link);
+                startPin.getNode().OnOutputHookup(link);
+                endPin.getNode().OnInputHookup(link);
             }
         }
 

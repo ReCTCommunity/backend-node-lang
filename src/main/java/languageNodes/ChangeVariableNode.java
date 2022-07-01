@@ -10,8 +10,8 @@ public class ChangeVariableNode extends OperationNode {
     public ChangeVariableNode(){
         super();
         pins = new NodePin[2];
-        pins[0] = new NodePin("Variable", false, false);
-        pins[1] = new NodePin("By(value)", false, false);
+        pins[0] = new NodePin(this, "Variable", false, false);
+        pins[1] = new NodePin(this, "By(value)", false, false);
         //pins[2] = new NodePin("", true, false);
     }
 
