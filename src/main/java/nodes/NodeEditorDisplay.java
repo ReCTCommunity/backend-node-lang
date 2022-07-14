@@ -3,27 +3,30 @@ package nodes;
 import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImVec2;
-import imgui.app.Color;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
-import imgui.extension.imnodes.flag.ImNodesStyleVar;
-import imgui.extension.nodeditor.NodeEditor;
-import imgui.extension.nodeditor.NodeEditorConfig;
-import imgui.extension.nodeditor.NodeEditorContext;
-import imgui.extension.nodeditor.flag.NodeEditorPinKind;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiMouseButton;
+import imgui.type.ImBoolean;
+import imgui.type.ImFloat;
 import imgui.type.ImInt;
+import imgui.type.ImString;
 import languageNodes.*;
+import languageNodes.controlNodes.ForNode;
 import languageNodes.controlNodes.IfNode;
+import languageNodes.controlNodes.SequenceNode;
+import languageNodes.controlNodes.WhileNode;
+import languageNodes.devNodes.PrintNode;
 import languageNodes.mathNodes.*;
+import types.DataType;
+import types.NodeType;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.*;
 
@@ -63,6 +66,14 @@ public class NodeEditorDisplay {
         put("Logical Not", LogicalNotNode.class);
 
         put("If", IfNode.class);
+        put("Sequence", SequenceNode.class);
+        put("While Loop", WhileNode.class);
+        put("For Loop", ForNode.class);
+
+        put("String Concat", ConcatNode.class);
+        put("To String", ToStringNode.class);
+
+        put("Debug Print", PrintNode.class);
     }};
 
     public Node createGraphNode(Class<?> type) {
@@ -168,6 +179,10 @@ public class NodeEditorDisplay {
 
                     ImGui.textUnformatted(pin.getName());
                     ImNodes.endInputAttribute();
+
+                    if (!pin.isExecution() && !pin.Connected) {
+                        PinInputField(pin);
+                    }
                 }
                 ImNodes.popColorStyle();
             }
@@ -209,7 +224,7 @@ public class NodeEditorDisplay {
 
             if ((startPin.isExecution() && endPin.isExecution()) ||
                 (startPin.getDatatype() == endPin.getDatatype()) ||
-                (!startPin.isExecution() && endPin.getDatatype() == Datatype.Any))
+                (!startPin.isExecution() && endPin.getDatatype() == DataType.Any))
             {
                 NodeLink link;// = new NodeLink(start_attr.get(), end_attr.get(), );
 
@@ -217,6 +232,9 @@ public class NodeEditorDisplay {
                     link = new NodeLink(start_attr.get(), end_attr.get(), true);
                 else
                     link = new NodeLink(start_attr.get(), end_attr.get(), startPin.getDatatype());
+
+                startPin.Connected = true;
+                endPin.Connected = true;
 
                 nodeLinks.add(link);
                 startPin.getNode().OnOutputHookup(link);
@@ -230,8 +248,7 @@ public class NodeEditorDisplay {
             System.out.println("Removing link " + link_id);
             for(var l : nodeLinks){
                 if(l.getId() == link_id.get()) {
-                    nodeLinks.remove(l);
-                    System.out.println("Removed link " + link_id);
+                    RemoveLink(l);
                     break;
                 }
 
@@ -245,10 +262,9 @@ public class NodeEditorDisplay {
                 ImGui.openPopup("node_context");
                 ImGui.getStateStorage().setInt(ImGui.getID("delete_node_id"), hoveredNode);
             } else if(hoveredLink != -1) {
-                for(var l : nodeLinks){
+                for(var l : nodeLinks) {
                     if(l.getId() == hoveredLink) {
-                        nodeLinks.remove(l);
-                        System.out.println("Removed link " + hoveredLink);
+                        RemoveLink(l);
                         break;
                     }
 
@@ -263,7 +279,27 @@ public class NodeEditorDisplay {
             final int targetNode = ImGui.getStateStorage().getInt(ImGui.getID("delete_node_id"));
             if (ImGui.beginPopup("node_context")) {
                 if (ImGui.button("Delete " + nodes.get(targetNode).getName())) {
+                    Node nodeToDelete = nodes.get(targetNode);
                     nodes.remove(targetNode);
+
+                    // look through all Links if one needs to be removed from this node
+                    // (this deletion is done in two steps so java won't cry that I modified the collection while looping)
+                    List<NodeLink> toRemove = new ArrayList<>();
+                    for (NodeLink l : nodeLinks) {
+                        if (NodePin.AllPins.get(l.getStart()).getNode().getNodeId() == targetNode ||
+                            NodePin.AllPins.get(l.getEnd()).getNode().getNodeId() == targetNode)
+                            toRemove.add(l);
+                    }
+
+                    for (NodeLink l : toRemove) {
+                        RemoveLink(l);
+                    }
+
+                    // remove the node's pins from the global pin storage
+                    for (NodePin p : nodeToDelete.getPins()) {
+                        NodePin.AllPins.remove(p);
+                    }
+
                     ImGui.closeCurrentPopup();
                 }
                 ImGui.endPopup();
@@ -293,5 +329,60 @@ public class NodeEditorDisplay {
 
             ImGui.endPopup();
         }
+    }
+
+    void PinInputField(NodePin pin)
+    {
+        if (!pin.getDatatype().CanBeLiteral) return;
+
+        ImGui.sameLine();
+        ImGui.pushItemWidth(150);
+        ImGui.pushStyleColor(ImGuiCol.FrameBg, ImColor.rgbToColor("#575757"));
+        ImGui.pushStyleColor(ImGuiCol.Button, ImColor.rgbToColor("#575757"));
+
+        if (pin.getDatatype() == DataType.Bool) {
+            ImBoolean v = new ImBoolean((boolean)pin.LiteralValue);
+            if (ImGui.checkbox("##" + pin.getId(), v)) {
+                pin.LiteralValue = v.get();
+            }
+        }
+        else if (pin.getDatatype() == DataType.Int) {
+            ImInt v = new ImInt((int)pin.LiteralValue);
+            if (ImGui.inputInt("##" + pin.getId(), v)) {
+                pin.LiteralValue = v.get();
+            }
+        }
+        else if (pin.getDatatype() == DataType.Float) {
+            ImFloat v = new ImFloat((float)pin.LiteralValue);
+            if (ImGui.inputFloat("##" + pin.getId(), v)) {
+                pin.LiteralValue = v.get();
+            }
+        }
+        else if (pin.getDatatype() == DataType.String) {
+            ImString v = new ImString();
+            v.set(pin.LiteralValue);
+            if (ImGui.inputText("##" + pin.getId(), v)) {
+                pin.LiteralValue = v.get();
+            }
+        }
+
+        ImGui.popStyleColor();
+        ImGui.popStyleColor();
+        ImGui.popItemWidth();
+    }
+
+    void RemoveLink(NodeLink l) {
+        nodeLinks.remove(l);
+
+        NodePin startPin = NodePin.AllPins.get(l.getStart());
+        NodePin endPin = NodePin.AllPins.get(l.getEnd());
+
+        startPin.Connected = false;
+        endPin.Connected = false;
+
+        startPin.getNode().OnOutputRemoval(l);
+        endPin.getNode().OnInputRemoval(l);
+
+        System.out.println("Removed link " + l.getId());
     }
 }

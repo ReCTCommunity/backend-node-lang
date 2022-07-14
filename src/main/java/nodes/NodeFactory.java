@@ -1,7 +1,11 @@
 package nodes;
 
 import languageNodes.*;
+import languageNodes.controlNodes.ForNode;
 import languageNodes.controlNodes.IfNode;
+import languageNodes.controlNodes.SequenceNode;
+import languageNodes.controlNodes.WhileNode;
+import languageNodes.devNodes.PrintNode;
 import languageNodes.mathNodes.*;
 
 public class NodeFactory {
@@ -55,6 +59,20 @@ public class NodeFactory {
 
         else if(type == IfNode.class)
             return new IfNode();
+        else if(type == SequenceNode.class)
+            return new SequenceNode();
+        else if(type == WhileNode.class)
+            return new WhileNode();
+        else if(type == ForNode.class)
+            return new ForNode();
+
+        else if(type == ConcatNode.class)
+            return new ConcatNode();
+        else if(type == ToStringNode.class)
+            return new ToStringNode();
+
+        else if(type == PrintNode.class)
+            return new PrintNode();
 
         return null;
     }

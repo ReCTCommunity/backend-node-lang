@@ -1,5 +1,7 @@
 package nodes;
 
+import types.NodeType;
+
 public abstract class Node {
     private final int nodeId;
 
@@ -23,4 +25,6 @@ public abstract class Node {
 
     public void OnInputHookup(NodeLink link) {}
     public void OnOutputHookup(NodeLink link) {}
+    public void OnInputRemoval(NodeLink link) {}
+    public void OnOutputRemoval(NodeLink link) {}
 }
